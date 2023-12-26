@@ -32,17 +32,10 @@ app = Flask(__name__)
 
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PORT'] = 3308
-app.config['MYSQL_PASSWORD'] = 'your pwd'
+app.config['MYSQL_PORT'] = 3306
+app.config['MYSQL_PASSWORD'] = ''
 app.config['MYSQL_DB'] = 'quizapp'
 app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
-
-app.config['MAIL_SERVER']='smtp.stackmail.com'
-app.config['MAIL_PORT'] = 587
-app.config['MAIL_USERNAME'] = 'care@youremail.com'
-app.config['MAIL_PASSWORD'] = 'password'
-app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USE_SSL'] = False
 
 app.config['SESSION_COOKIE_SAMESITE'] = "None"
 
@@ -387,17 +380,18 @@ def register():
 		password = request.form['password']
 		user_type = request.form['user_type']
 		imgdata = request.form['image_hidden']
-		session['tempName'] = name
-		session['tempEmail'] = email
-		session['tempPassword'] = password
-		session['tempUT'] = user_type
-		session['tempImage'] = imgdata
-		sesOTP = generateOTP()
-		session['tempOTP'] = sesOTP
-		msg1 = Message('MyProctor.ai - OTP Verification', sender = sender, recipients = [email])
-		msg1.body = "New Account opening - Your OTP Verfication code is "+sesOTP+"."
-		mail.send(msg1)
-		return redirect(url_for('verifyEmail')) 
+
+		cur = mysql.connection.cursor()
+		ar = cur.execute('INSERT INTO users(name, email, password, user_type, user_image, user_login) values(%s,%s,%s,%s,%s,%s)', (name, email, password, user_type, imgdata,0))
+		mysql.connection.commit()
+		if ar > 0:
+			flash("Thanks for registering! You are sucessfully verified!.")
+			return  redirect(url_for('login'))
+		else:
+			flash("Error Occurred!")
+			return  redirect(url_for('login')) 
+		cur.close()
+
 	return render_template('register.html')
 
 @app.route('/login', methods=['GET','POST'])
