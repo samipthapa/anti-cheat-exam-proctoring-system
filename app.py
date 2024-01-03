@@ -385,7 +385,7 @@ def register():
 		ar = cur.execute('INSERT INTO users(name, email, password, user_type, user_image, user_login) values(%s,%s,%s,%s,%s,%s)', (name, email, password, user_type, imgdata,0))
 		mysql.connection.commit()
 		if ar > 0:
-			flash("Thanks for registering! You are sucessfully verified!.")
+			flash("You've successfully created your account")
 			return  redirect(url_for('login'))
 		else:
 			flash("Error Occurred!")
