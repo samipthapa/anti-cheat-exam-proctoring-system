@@ -517,12 +517,12 @@ class QAUploadForm(FlaskForm):
 	topic = StringField('Topic')
 	doc = FileField('CSV Upload', validators=[FileRequired()])
 	start_date = DateField('Start Date')
-	start_time = TimeField('Start Time', default=datetime.utcnow()+timedelta(hours=5.5))
+	start_time = TimeField('Start Time', default=datetime.utcnow()+timedelta(hours=5.75))
 	end_date = DateField('End Date')
-	end_time = TimeField('End Time', default=datetime.utcnow()+timedelta(hours=5.5))
+	end_time = TimeField('End Time', default=datetime.utcnow()+timedelta(hours=5.75))
 	duration = IntegerField('Duration(in min)')
 	password = PasswordField('Exam Password', [validators.Length(min=3, max=6)])
-	proctor_type = RadioField('Proctoring Type', choices=[('0','Automatic Monitoring'),('1','Live Monitoring')])
+	proctor_type = RadioField('Proctoring Type', choices=[('0','Automatic Monitoring'),('1','Live Monitoring')], default='0')
 
 	def validate_end_date(form, field):
 		if field.data < form.start_date.data:
@@ -551,34 +551,26 @@ def create_test_lqa():
 		fields = ['qid','q','marks']
 		df = pd.DataFrame(ef, columns = fields)
 		cur = mysql.connection.cursor()
-		ecc = examcreditscheck()
-		if ecc:
-			for row in df.index:
-				cur.execute('INSERT INTO longqa(test_id,qid,q,marks,uid) values(%s,%s,%s,%s,%s)', (test_id, df['qid'][row], df['q'][row], df['marks'][row], session['uid']))
-				cur.connection.commit()
-				
-			start_date = form.start_date.data
-			end_date = form.end_date.data
-			start_time = form.start_time.data
-			end_time = form.end_time.data
-			start_date_time = str(start_date) + " " + str(start_time)
-			end_date_time = str(end_date) + " " + str(end_time)
-			duration = int(form.duration.data)*60
-			password = form.password.data
-			subject = form.subject.data
-			topic = form.topic.data
-			proctor_type = form.proctor_type.data
-			cur.execute('INSERT INTO teachers (email, test_id, test_type, start, end, duration, show_ans, password, subject, topic, neg_marks, calc, proctoring_type, uid) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)',
-				(dict(session)['email'], test_id, "subjective", start_date_time, end_date_time, duration, 0, password, subject, topic, 0, 0, proctor_type, session['uid']))
-			mysql.connection.commit()
-			cur.execute('UPDATE users SET examcredits = examcredits-1 where email = %s and uid = %s', (session['email'],session['uid']))
-			mysql.connection.commit()
-			cur.close()
-			flash(f'Exam ID: {test_id}', 'success')
-			return redirect(url_for('professor_index'))
-		else:
-			flash("No exam credits points are found! Please pay it!")
-			return redirect(url_for('professor_index'))
+		for row in df.index:
+			cur.execute('INSERT INTO longqa(test_id,qid,q,marks,uid) values(%s,%s,%s,%s,%s)', (test_id, df['qid'][row], df['q'][row], df['marks'][row], session['uid']))
+			cur.connection.commit()
+			
+		start_date = form.start_date.data
+		end_date = form.end_date.data
+		start_time = form.start_time.data
+		end_time = form.end_time.data
+		start_date_time = str(start_date) + " " + str(start_time)
+		end_date_time = str(end_date) + " " + str(end_time)
+		duration = int(form.duration.data)*60
+		password = form.password.data
+		subject = form.subject.data
+		topic = form.topic.data
+		cur.execute('INSERT INTO teachers (email, test_id, test_type, start, end, duration, show_ans, password, subject, topic, neg_marks, calc, proctoring_type, uid) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)',
+			(dict(session)['email'], test_id, "subjective", start_date_time, end_date_time, duration, 0, password, subject, topic, 0, 0, '0', session['uid']))
+		mysql.connection.commit()
+		cur.close()
+		flash(f'Exam ID: {test_id}', 'success')
+		return redirect(url_for('professor_index'))
 	return render_template('create_test_lqa.html' , form = form)
 
 class UploadForm(FlaskForm):
@@ -586,9 +578,9 @@ class UploadForm(FlaskForm):
 	topic = StringField('Topic')
 	doc = FileField('CSV Upload', validators=[FileRequired()])
 	start_date = DateField('Start Date')
-	start_time = TimeField('Start Time', default=datetime.utcnow()+timedelta(hours=5.5))
+	start_time = TimeField('Start Time', default=datetime.utcnow()+timedelta(hours=5.75))
 	end_date = DateField('End Date')
-	end_time = TimeField('End Time', default=datetime.utcnow()+timedelta(hours=5.5))
+	end_time = TimeField('End Time', default=datetime.utcnow()+timedelta(hours=5.75))
 	calc = BooleanField('Enable Calculator')
 	neg_mark = DecimalField('Enable negative marking in % ', validators=[NumberRange(min=0, max=100)])
 	duration = IntegerField('Duration(in min)')
@@ -618,9 +610,7 @@ class TestForm(Form):
 @user_role_professor
 def create_test():
 	form = UploadForm()
-	print('validate_on_submit', form.validate_on_submit())
 	if request.method == 'POST' and form.validate_on_submit():
-		print('Inside if condition')
 		test_id = generate_slug(2)
 		filename = secure_filename(form.doc.data.filename)
 		filestream = form.doc.data
@@ -629,8 +619,6 @@ def create_test():
 		fields = ['qid','q','a','b','c','d','ans','marks']
 		df = pd.DataFrame(ef, columns = fields)
 		cur = mysql.connection.cursor()
-		# ecc = examcreditscheck()
-		# if ecc:
 		for row in df.index:
 			cur.execute('INSERT INTO questions(test_id,qid,q,a,b,c,d,ans,marks,uid) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)', (test_id, df['qid'][row], df['q'][row], df['a'][row], df['b'][row], df['c'][row], df['d'][row], df['ans'][row], df['marks'][row], session['uid']))
 			cur.connection.commit()
@@ -650,85 +638,11 @@ def create_test():
 		cur.execute('INSERT INTO teachers (email, test_id, test_type, start, end, duration, show_ans, password, subject, topic, neg_marks, calc,proctoring_type, uid) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)',
 			(dict(session)['email'], test_id, "objective", start_date_time, end_date_time, duration, 1, password, subject, topic, neg_mark, calc, '0', session['uid']))
 		mysql.connection.commit()
-		# cur.execute('UPDATE users SET examcredits = examcredits-1 where email = %s and uid = %s', (session['email'],session['uid']))
-		# mysql.connection.commit()
 		cur.close()
 		flash(f'Exam ID: {test_id}', 'success')
 		return redirect(url_for('professor_index'))
-		# else:
-		# 	flash("No exam credits points are found! Please pay it!")
-		# 	return redirect(url_for('professor_index'))
 	return render_template('create_test.html' , form = form)
 
-class PracUploadForm(FlaskForm):
-	subject = StringField('Subject')
-	topic = StringField('Topic')
-	questionprac = StringField('Question')
-	marksprac = IntegerField('Marks')
-	start_date = DateField('Start Date')
-	start_time = TimeField('Start Time', default=datetime.utcnow()+timedelta(hours=5.5))
-	end_date = DateField('End Date')
-	end_time = TimeField('End Time', default=datetime.utcnow()+timedelta(hours=5.5))
-	duration = IntegerField('Duration(in min)')
-	compiler = SelectField(u'Compiler/Interpreter', choices=[('11', 'C'), ('27', 'C#'), ('1', 'C++'),('114', 'Go'),('10', 'Java'),('47', 'Kotlin'),('56', 'Node.js'),
-	('43', 'Objective-C'),('29', 'PHP'),('54', 'Perl-6'),('116', 'Python 3x'),('117', 'R'),('17', 'Ruby'),('93', 'Rust'),('52', 'SQLite-queries'),('40', 'SQLite-schema'),
-	('39', 'Scala'),('85', 'Swift'),('57', 'TypeScript')])
-	password = PasswordField('Exam Password', [validators.Length(min=3, max=10)])
-	proctor_type = RadioField('Proctoring Type', choices=[('0','Automatic Monitoring'),('1','Live Monitoring')])
-
-	def validate_end_date(form, field):
-		if field.data < form.start_date.data:
-			raise ValidationError("End date must not be earlier than start date.")
-	
-	def validate_end_time(form, field):
-		start_date_time = datetime.strptime(str(form.start_date.data) + " " + str(form.start_time.data),"%Y-%m-%d %H:%M:%S").strftime("%Y-%m-%d %H:%M")
-		end_date_time = datetime.strptime(str(form.end_date.data) + " " + str(field.data),"%Y-%m-%d %H:%M:%S").strftime("%Y-%m-%d %H:%M")
-		if start_date_time >= end_date_time:
-			raise ValidationError("End date time must not be earlier/equal than start date time")
-	
-	def validate_start_date(form, field):
-		if datetime.strptime(str(form.start_date.data) + " " + str(form.start_time.data),"%Y-%m-%d %H:%M:%S") < datetime.now():
-			raise ValidationError("Start date and time must not be earlier than current")
-
-@app.route('/create_test_pqa', methods = ['GET', 'POST'])
-@user_role_professor
-def create_test_pqa():
-	form = PracUploadForm()
-	if request.method == 'POST' and form.validate_on_submit():
-		test_id = generate_slug(2)
-		ecc = examcreditscheck()
-		print(ecc)
-		if ecc:
-			test_id = generate_slug(2)
-			compiler = form.compiler.data
-			questionprac = form.questionprac.data
-			marksprac = int(form.marksprac.data)
-			cur = mysql.connection.cursor()
-			cur.execute('INSERT INTO practicalqa(test_id,qid,q,compiler,marks,uid) values(%s,%s,%s,%s,%s,%s)', (test_id, 1, questionprac, compiler, marksprac, session['uid']))
-			mysql.connection.commit()
-			start_date = form.start_date.data
-			end_date = form.end_date.data
-			start_time = form.start_time.data
-			end_time = form.end_time.data
-			start_date_time = str(start_date) + " " + str(start_time)
-			end_date_time = str(end_date) + " " + str(end_time)
-			duration = int(form.duration.data)*60
-			password = form.password.data
-			subject = form.subject.data
-			topic = form.topic.data
-			proctor_type = form.proctor_type.data
-			cur.execute('INSERT INTO teachers (email, test_id, test_type, start, end, duration, show_ans, password, subject, topic, neg_marks, calc, proctoring_type, uid) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)',
-				(dict(session)['email'], test_id, "practical", start_date_time, end_date_time, duration, 0, password, subject, topic, 0, 0, proctor_type, session['uid']))
-			mysql.connection.commit()
-			cur.execute('UPDATE users SET examcredits = examcredits-1 where email = %s and uid = %s', (session['email'],session['uid']))
-			mysql.connection.commit()
-			cur.close()
-			flash(f'Exam ID: {test_id}', 'success')
-			return redirect(url_for('professor_index'))
-		else:
-			flash("No exam credits points are found! Please pay it!")
-			return redirect(url_for('professor_index'))	
-	return render_template('create_prac_qa.html' , form = form)
 
 @app.route('/deltidlist', methods=['GET'])
 @user_role_professor

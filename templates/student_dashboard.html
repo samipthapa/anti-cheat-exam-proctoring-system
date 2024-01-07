@@ -47,35 +47,35 @@
 
 <body>
   <script type="text/javascript">
-    window.addEventListener('selectstart', function (e) { e.preventDefault(); });
-    $(document).ready(function () {
-      //Disable cut copy paste
-      $('body').bind('select cut copy paste', function (e) {
-        e.preventDefault();
-      });
+    // window.addEventListener('selectstart', function (e) { e.preventDefault(); });
+    // $(document).ready(function () {
+    //   //Disable cut copy paste
+    //   $('body').bind('select cut copy paste', function (e) {
+    //     e.preventDefault();
+    //   });
 
-      //Disable mouse right click
-      $("body").on("contextmenu", function (e) {
-        return false;
-      });
-    });
-    /** TO DISABLE SCREEN CAPTURE **/
-    document.addEventListener('keyup', (e) => {
-      if (e.key == 'PrintScreen') {
-        navigator.clipboard.writeText('');
-        alert('Screenshots disabled!');
-      }
-    });
+    //   //Disable mouse right click
+    //   $("body").on("contextmenu", function (e) {
+    //     return false;
+    //   });
+    // });
+    // /** TO DISABLE SCREEN CAPTURE **/
+    // document.addEventListener('keyup', (e) => {
+    //   if (e.key == 'PrintScreen') {
+    //     navigator.clipboard.writeText('');
+    //     alert('Screenshots disabled!');
+    //   }
+    // });
 
-    /** TO DISABLE PRINTS WHIT CTRL+P **/
-    document.addEventListener('keydown', (e) => {
-      if (e.ctrlKey && e.key == 'p') {
-        alert('This section is not allowed to print or export to PDF');
-        e.cancelBubble = true;
-        e.preventDefault();
-        e.stopImmediatePropagation();
-      }
-    });
+    // /** TO DISABLE PRINTS WHIT CTRL+P **/
+    // document.addEventListener('keydown', (e) => {
+    //   if (e.ctrlKey && e.key == 'p') {
+    //     alert('This section is not allowed to print or export to PDF');
+    //     e.cancelBubble = true;
+    //     e.preventDefault();
+    //     e.stopImmediatePropagation();
+    //   }
+    // });
 
     function funLogout() {
 
@@ -118,26 +118,26 @@
       })
     }
 
-    function funStartExam() {
-      Swal.fire({
-        title: '<strong>BEFORE EXAM LOGIN RULES</strong>',
-        icon: 'warning',
-        html:
-          '<h5>ONLINE EXAM RULES TO BE FOLLOWED STRICTLY</h5>, ' +
-          '<ol><li>Dont minimize the window it will be monitored.</li><li>Check that your camera is proper.</li><li>Dont try to use mobile or any other material it will be monitored and strict action will be taken.</li><li>Use calculator which is given by our system not from your laptop/desktop/mobile.</li><li>Dont use incognito browser & also check that your cookies are enabled.</li><li>Any problem occurs call directly to customer care +91 9320907041 or care@narenderkeswani.com.</li></ol>',
-        showCloseButton: false,
-        showCancelButton: false,
-        focusConfirm: true,
-        confirmButtonColor: '#202124',
-        confirmButtonText:
-          'OK, BEGIN EXAM!',
-        confirmButtonAriaLabel: 'We are abide by rules!'
-      }).then((result) => {
-        if (result.isConfirmed) {
-          window.location.href = "/give-test";
-        }
-      })
-    }
+    // function funStartExam() {
+    //   Swal.fire({
+    //     title: '<strong>BEFORE EXAM LOGIN RULES</strong>',
+    //     icon: 'warning',
+    //     html:
+    //       '<h5>ONLINE EXAM RULES TO BE FOLLOWED STRICTLY</h5>, ' +
+    //       '<ol><li>Dont minimize the window it will be monitored.</li><li>Check that your camera is proper.</li><li>Dont try to use mobile or any other material it will be monitored and strict action will be taken.</li><li>Use calculator which is given by our system not from your laptop/desktop/mobile.</li><li>Dont use incognito browser & also check that your cookies are enabled.</li><li>Any problem occurs call directly to customer care +91 9320907041 or care@narenderkeswani.com.</li></ol>',
+    //     showCloseButton: false,
+    //     showCancelButton: false,
+    //     focusConfirm: true,
+    //     confirmButtonColor: '#202124',
+    //     confirmButtonText:
+    //       'OK, BEGIN EXAM!',
+    //     confirmButtonAriaLabel: 'We are abide by rules!'
+    //   }).then((result) => {
+    //     if (result.isConfirmed) {
+    //       window.location.href = "/give-test";
+    //     }
+    //   })
+    // }
   </script>
 
   <nav class="navbar navbar-dark navbar-theme-primary px-4 col-12 d-md-none">
@@ -175,7 +175,7 @@
 
       <ul class="nav flex-column pt-3 pt-md-0">
         <li class="nav-item">
-          <a href="#" onclick="return funStartExam()" class="nav-link">
+          <a href="/give-test" class="nav-link">
             <span class="sidebar-icon"><span class="fas fa-clipboard-list"></span></span>
             <span class="sidebar-text">Give Exam</span>
           </a>
