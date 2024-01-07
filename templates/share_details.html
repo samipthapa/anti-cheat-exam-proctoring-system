@@ -53,15 +53,6 @@
                     <input type="hidden" name="neg_marks" value="{{res['neg_marks']}}">
                     <td>{{res['neg_marks']}} %</td>
                 </tr>
-                <tr>
-                    <td  scope="col" >CALCULATOR ALLOWED</td>
-                    <td>{% if(res['calc'] == 1) %} 
-                        <input type="hidden" name="calc" value="YES">
-                        YES {% else %}
-                        <input type="hidden" name="calc" value="NO">
-                        NO
-                        {% endif %}</td>
-                </tr>
 {% endfor %}
 </tbody>
             </table>

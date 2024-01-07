@@ -593,7 +593,7 @@ class UploadForm(FlaskForm):
 	neg_mark = DecimalField('Enable negative marking in % ', validators=[NumberRange(min=0, max=100)])
 	duration = IntegerField('Duration(in min)')
 	password = PasswordField('Exam Password', [validators.Length(min=3, max=6)])
-	proctor_type = RadioField('Proctoring Type', choices=[('0','Automatic Monitoring'),('1','Live Monitoring')])
+	proctor_type = RadioField('Proctoring Type', choices=[('0','Automatic Monitoring'),('1','Live Monitoring')], default='0')
 
 	def validate_end_date(form, field):
 		if field.data < form.start_date.data:
@@ -618,7 +618,9 @@ class TestForm(Form):
 @user_role_professor
 def create_test():
 	form = UploadForm()
+	print('validate_on_submit', form.validate_on_submit())
 	if request.method == 'POST' and form.validate_on_submit():
+		print('Inside if condition')
 		test_id = generate_slug(2)
 		filename = secure_filename(form.doc.data.filename)
 		filestream = form.doc.data
@@ -627,36 +629,35 @@ def create_test():
 		fields = ['qid','q','a','b','c','d','ans','marks']
 		df = pd.DataFrame(ef, columns = fields)
 		cur = mysql.connection.cursor()
-		ecc = examcreditscheck()
-		if ecc:
-			for row in df.index:
-				cur.execute('INSERT INTO questions(test_id,qid,q,a,b,c,d,ans,marks,uid) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)', (test_id, df['qid'][row], df['q'][row], df['a'][row], df['b'][row], df['c'][row], df['d'][row], df['ans'][row], df['marks'][row], session['uid']))
-				cur.connection.commit()
+		# ecc = examcreditscheck()
+		# if ecc:
+		for row in df.index:
+			cur.execute('INSERT INTO questions(test_id,qid,q,a,b,c,d,ans,marks,uid) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)', (test_id, df['qid'][row], df['q'][row], df['a'][row], df['b'][row], df['c'][row], df['d'][row], df['ans'][row], df['marks'][row], session['uid']))
+			cur.connection.commit()
 
-			start_date = form.start_date.data
-			end_date = form.end_date.data
-			start_time = form.start_time.data
-			end_time = form.end_time.data
-			start_date_time = str(start_date) + " " + str(start_time)
-			end_date_time = str(end_date) + " " + str(end_time)
-			neg_mark = int(form.neg_mark.data)
-			calc = int(form.calc.data)
-			duration = int(form.duration.data)*60
-			password = form.password.data
-			subject = form.subject.data
-			topic = form.topic.data
-			proctor_type = form.proctor_type.data
-			cur.execute('INSERT INTO teachers (email, test_id, test_type, start, end, duration, show_ans, password, subject, topic, neg_marks, calc,proctoring_type, uid) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)',
-				(dict(session)['email'], test_id, "objective", start_date_time, end_date_time, duration, 1, password, subject, topic, neg_mark, calc, proctor_type, session['uid']))
-			mysql.connection.commit()
-			cur.execute('UPDATE users SET examcredits = examcredits-1 where email = %s and uid = %s', (session['email'],session['uid']))
-			mysql.connection.commit()
-			cur.close()
-			flash(f'Exam ID: {test_id}', 'success')
-			return redirect(url_for('professor_index'))
-		else:
-			flash("No exam credits points are found! Please pay it!")
-			return redirect(url_for('professor_index'))
+		start_date = form.start_date.data
+		end_date = form.end_date.data
+		start_time = form.start_time.data
+		end_time = form.end_time.data
+		start_date_time = str(start_date) + " " + str(start_time)
+		end_date_time = str(end_date) + " " + str(end_time)
+		neg_mark = int(form.neg_mark.data)
+		calc = int(form.calc.data)
+		duration = int(form.duration.data)*60
+		password = form.password.data
+		subject = form.subject.data
+		topic = form.topic.data
+		cur.execute('INSERT INTO teachers (email, test_id, test_type, start, end, duration, show_ans, password, subject, topic, neg_marks, calc,proctoring_type, uid) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)',
+			(dict(session)['email'], test_id, "objective", start_date_time, end_date_time, duration, 1, password, subject, topic, neg_mark, calc, '0', session['uid']))
+		mysql.connection.commit()
+		# cur.execute('UPDATE users SET examcredits = examcredits-1 where email = %s and uid = %s', (session['email'],session['uid']))
+		# mysql.connection.commit()
+		cur.close()
+		flash(f'Exam ID: {test_id}', 'success')
+		return redirect(url_for('professor_index'))
+		# else:
+		# 	flash("No exam credits points are found! Please pay it!")
+		# 	return redirect(url_for('professor_index'))
 	return render_template('create_test.html' , form = form)
 
 class PracUploadForm(FlaskForm):
@@ -1826,4 +1827,4 @@ def test_generate():
 			return None
 
 if __name__ == "__main__":
-	app.run(host = "0.0.0.0",debug=False)
+	app.run(host = "0.0.0.0",debug=True)
