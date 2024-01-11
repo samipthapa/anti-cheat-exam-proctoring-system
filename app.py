@@ -954,13 +954,9 @@ def insertmarkstid():
 	results = cur.execute('SELECT * from teachers where show_ans = 0 and email = %s and uid = %s and (test_type = %s or test_type = %s)', (session['email'], session['uid'],"subjective","practical"))
 	if results > 0:
 		cresults = cur.fetchall()
-		now = datetime.now()
-		now = now.strftime("%Y-%m-%d %H:%M:%S")
-		now = datetime.strptime(now,"%Y-%m-%d %H:%M:%S")
 		testids = []
 		for a in cresults:
-			if datetime.strptime(str(a['end']),"%Y-%m-%d %H:%M:%S") < now:
-				testids.append(a['test_id'])
+			testids.append(a['test_id'])
 		cur.close()
 		return render_template("insertmarkstid.html", cresults = testids)
 	else:
