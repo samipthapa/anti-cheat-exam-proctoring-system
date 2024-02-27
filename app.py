@@ -42,6 +42,7 @@ app.config['SESSION_COOKIE_SAMESITE'] = "None"
 app.config['SESSION_TYPE'] = 'filesystem'
 
 app.config["TEMPLATES_AUTO_RELOAD"] = True
+app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 0
 
 stripe_keys = {
     "secret_key": "dummy",
