@@ -107,14 +107,11 @@ window.onfocus = function(event) {
         console.log(average)
         console.log(Math.round(average - 40));
 
-        if(average)
-        {
-            $.post("/video_feed",{
-                data : {'imgData':res,'voice_db':average,'testid': tid}},
-                function(data){
-                console.log(data);
-                });
-        }
+        $.post("/video_feed",{
+            data : {'imgData':res,'voice_db':average,'testid': tid}},
+            function(data){
+            console.log(data);
+            });
 
       } 
       setTimeout(captureSnapshot, 5000);
